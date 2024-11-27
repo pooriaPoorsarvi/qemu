@@ -4360,10 +4360,10 @@ void qemu_init(int argc, char **argv, char **envp)
     /* do monitor/qmp handling at preconfig state if requested */
     qemu_main_loop();
 
-    if (machine_class->default_ram_id && current_machine->ram_size &&
-        numa_uses_legacy_mem() && !current_machine->ram_memdev_id) {
-        create_default_memdev(current_machine, mem_path);
-    }
+    // if (machine_class->default_ram_id && current_machine->ram_size &&
+    //     numa_uses_legacy_mem() && !current_machine->ram_memdev_id) {
+    //     create_default_memdev(current_machine, mem_path);
+    // }
 
     /* from here on runstate is RUN_STATE_PRELAUNCH */
     machine_run_board_init(current_machine);

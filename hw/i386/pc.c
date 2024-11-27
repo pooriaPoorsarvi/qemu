@@ -95,6 +95,7 @@
 #include "e820_memory_layout.h"
 #include "fw_cfg.h"
 #include "trace.h"
+#include "exec/custom-memory-device.h"
 #include CONFIG_DEVICES
 
 GlobalProperty pc_compat_5_1[] = {
@@ -886,6 +887,10 @@ void pc_memory_init(PCMachineState *pcms,
     MachineClass *mc = MACHINE_GET_CLASS(machine);
     PCMachineClass *pcmc = PC_MACHINE_GET_CLASS(pcms);
     X86MachineState *x86ms = X86_MACHINE(pcms);
+
+
+    CustomMemoryDevice *custom_ram = get_new_custom_memory_device();
+    machine->ram = &custom_ram->mr;
 
     assert(machine->ram_size == x86ms->below_4g_mem_size +
                                 x86ms->above_4g_mem_size);
