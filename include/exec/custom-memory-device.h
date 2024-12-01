@@ -25,7 +25,7 @@ DECLARE_INSTANCE_CHECKER(CustomMemoryDevice,
                          CUSTOM_MEMORY_DEVICE,
                          TYPE_CUSTOM_MEMORY_DEVICE)
 
-CustomMemoryDevice *get_new_custom_memory_device();
+CustomMemoryDevice *get_new_custom_memory_device(unsigned long long base, unsigned long long size);
 CustomMemoryDevice *get_custom_memory_device_singleton(void);
 
 

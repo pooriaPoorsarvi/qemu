@@ -7,14 +7,14 @@
 
 CustomMemoryDevice * singleton;
 
-CustomMemoryDevice *get_new_custom_memory_device(){
+CustomMemoryDevice *get_new_custom_memory_device(unsigned long long base, unsigned long long size){
     assert(singleton == NULL);
     DeviceState        *dev = qdev_new(TYPE_CUSTOM_MEMORY_DEVICE);
     CustomMemoryDevice *memory = singleton = CUSTOM_MEMORY_DEVICE(dev);
 
 
-    qdev_prop_set_uint64(DEVICE(dev), "base", 0);
-    qdev_prop_set_uint64(DEVICE(dev), "size", 0x100000000ULL);
+    qdev_prop_set_uint64(DEVICE(dev), "base", base);
+    qdev_prop_set_uint64(DEVICE(dev), "size", size);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
     return memory;
@@ -28,17 +28,19 @@ CustomMemoryDevice *get_custom_memory_device_singleton(void){
 
 static Property props[] = {
     // Pooria TODO : check if the base is correct
-    DEFINE_PROP_UINT64("base", CustomMemoryDevice, base, 0),
+    DEFINE_PROP_UINT64("base", CustomMemoryDevice, base, 0x400000000ULL),
     DEFINE_PROP_UINT64("size", CustomMemoryDevice, size, 0x100000000ULL),
     DEFINE_PROP_END_OF_LIST()
 };
 
 
 static MemTxResult mem_wr(void *opaque, hwaddr addr, uint64_t value, unsigned size, MemTxAttrs attrs) {
+    // qemu_printf("mem_wr by poori at %lx\n", addr);
     CustomMemoryDevice *memory = (CustomMemoryDevice *)opaque;
 
     // Check for out-of-bounds access
     if (addr + size > memory->size) {
+        qemu_printf("DMA write out of bounds: addr=%lx, size=%u\n", addr, size);
         return MEMTX_ERROR;
     }
 
@@ -49,10 +51,13 @@ static MemTxResult mem_wr(void *opaque, hwaddr addr, uint64_t value, unsigned si
 }
 
 static MemTxResult mem_rd(void *opaque, hwaddr addr, uint64_t *value, unsigned size, MemTxAttrs attrs) {
+    qemu_printf("mem_rd by poori at %lx\n", addr);
+
     CustomMemoryDevice *memory = (CustomMemoryDevice *)opaque;
 
     // Check for out-of-bounds access
     if (addr + size > memory->size) {
+        qemu_printf("DMA read out of bounds: addr=%lx, size=%u\n", addr, size);
         return MEMTX_ERROR;
     }
 
@@ -88,11 +93,12 @@ static void realize_custom_memory(DeviceState *dev, Error **errp) {
     memory->data = g_malloc0(memory->size);
     // assert(llc->idx_mask);
 
+    qemu_printf("realize_custom_memory by poori at size %lx\n and base %lx\n", memory->size, memory->base);
 
     memory_region_init_io(&memory->mr, OBJECT(dev), &mem_ops, memory, TYPE_CUSTOM_MEMORY_DEVICE, memory->size);
 
     sysbus_init_mmio(SYS_BUS_DEVICE(dev), &memory->mr);
-    memory_region_add_subregion(sys_mem, memory->base, &memory->mr);
+    memory_region_add_subregion_overlap(sys_mem, memory->base, &memory->mr, 10);
 }
 
 

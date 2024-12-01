@@ -889,8 +889,8 @@ void pc_memory_init(PCMachineState *pcms,
     X86MachineState *x86ms = X86_MACHINE(pcms);
 
 
-    CustomMemoryDevice *custom_ram = get_new_custom_memory_device();
-    machine->ram = &custom_ram->mr;
+    // Handles the overlapping memory: TODO maybe make it not overlapped
+    CustomMemoryDevice *custom_ram = get_new_custom_memory_device(0x400000000ULL, 1024);
 
     assert(machine->ram_size == x86ms->below_4g_mem_size +
                                 x86ms->above_4g_mem_size);
