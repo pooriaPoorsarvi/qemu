@@ -895,6 +895,7 @@ void pc_memory_init(PCMachineState *pcms,
     qemu_printf("below 4g mem size: %lu\n", x86ms->below_4g_mem_size);
     qemu_printf("above 4g mem size: %lu\n", x86ms->above_4g_mem_size);
 
+    // If started at 4 GB it will have some confilicts withn where DMA is being setup. So start at 8 or higher.
     unsigned long long custom_ram_base = 0x200000000ULL;
     unsigned long long custom_ram_size =  total_ram_size - custom_ram_base;
 
