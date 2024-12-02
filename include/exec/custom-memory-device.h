@@ -19,7 +19,6 @@ typedef struct CustomMemoryDevice {
 } CustomMemoryDevice;
 
 #define TYPE_CUSTOM_MEMORY_DEVICE "custom.memory"
-#define CUSTOM_MEMORY_MAX_SIZE 0xffffffff80000000lu
 
 DECLARE_INSTANCE_CHECKER(CustomMemoryDevice,
                          CUSTOM_MEMORY_DEVICE,

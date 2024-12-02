@@ -28,7 +28,7 @@ CustomMemoryDevice *get_custom_memory_device_singleton(void){
 
 static Property props[] = {
     // Pooria TODO : check if the base is correct
-    DEFINE_PROP_UINT64("base", CustomMemoryDevice, base, 0x400000000ULL),
+    DEFINE_PROP_UINT64("base", CustomMemoryDevice, base, 0x200000000ULL),
     DEFINE_PROP_UINT64("size", CustomMemoryDevice, size, 0x100000000ULL),
     DEFINE_PROP_END_OF_LIST()
 };
@@ -51,13 +51,12 @@ static MemTxResult mem_wr(void *opaque, hwaddr addr, uint64_t value, unsigned si
 }
 
 static MemTxResult mem_rd(void *opaque, hwaddr addr, uint64_t *value, unsigned size, MemTxAttrs attrs) {
-    qemu_printf("mem_rd by poori at %lx\n", addr);
+    // qemu_printf("mem_rd by poori at %lx\n", addr);
 
     CustomMemoryDevice *memory = (CustomMemoryDevice *)opaque;
 
     // Check for out-of-bounds access
     if (addr + size > memory->size) {
-        qemu_printf("DMA read out of bounds: addr=%lx, size=%u\n", addr, size);
         return MEMTX_ERROR;
     }
 
@@ -93,7 +92,7 @@ static void realize_custom_memory(DeviceState *dev, Error **errp) {
     memory->data = g_malloc0(memory->size);
     // assert(llc->idx_mask);
 
-    qemu_printf("realize_custom_memory by poori at size %lx\n and base %lx\n", memory->size, memory->base);
+    qemu_printf("realize_custom_memory at size %lx\n and base %lx\n", memory->size, memory->base);
 
     memory_region_init_io(&memory->mr, OBJECT(dev), &mem_ops, memory, TYPE_CUSTOM_MEMORY_DEVICE, memory->size);
 
