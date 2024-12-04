@@ -449,6 +449,19 @@ static QemuOptsList qemu_mem_opts = {
     },
 };
 
+static QemuOptsList qemu_far_off_memory_opts = {
+    .name = "far-off-memory",
+    .implied_opt_name = "far-size",
+    .head = QTAILQ_HEAD_INITIALIZER(qemu_far_off_memory_opts.head),
+    .merge_lists = true,
+    .desc = {
+        {
+            .name = "far-size",
+            .type = QEMU_OPT_SIZE,
+        },
+        { /* end of list */ }
+    },
+};
 static QemuOptsList qemu_icount_opts = {
     .name = "icount",
     .implied_opt_name = "shift",
@@ -2583,6 +2596,24 @@ static bool object_create_delayed(const char *type, QemuOpts *opts)
     return !object_create_initial(type, opts);
 }
 
+static bool setup_far_off_memory_options(uint64_t *far_size){
+    const char *far_str;
+    QemuOpts *opts = qemu_find_opts_singleton("far-off-memory");
+    Location loc;
+
+    loc_push_none(&loc);
+    qemu_opts_loc_restore(opts);
+
+    far_str = qemu_opt_get(opts, "far-size");
+    if (far_str) {
+        if (!*far_str) {
+            error_report("missing 'far-size' option value");
+            exit(EXIT_FAILURE);
+        }
+
+        *far_size = qemu_opt_get_size(opts, "far-size", ram_size);
+    }
+} 
 
 static bool set_memory_options(uint64_t *ram_slots, ram_addr_t *maxram_size,
                                MachineClass *mc)
@@ -2948,6 +2979,7 @@ void qemu_init(int argc, char **argv, char **envp)
     qemu_add_opts(&qemu_icount_opts);
     qemu_add_opts(&qemu_semihosting_config_opts);
     qemu_add_opts(&qemu_fw_cfg_opts);
+    qemu_add_opts(&qemu_far_off_memory_opts);
     module_call_init(MODULE_INIT_OPTS);
 
     runstate_init();
@@ -3828,6 +3860,12 @@ void qemu_init(int argc, char **argv, char **envp)
             case QEMU_OPTION_nouserconfig:
                 /* Nothing to be parsed here. Especially, do not error out below. */
                 break;
+            case QEMU_OPTION_far_off_memory:
+                if (!qemu_opts_parse_noisily(qemu_find_opts("far-off-memory"),
+                                             optarg, true)) {
+                    exit(1);
+                }
+                break;
             default:
                 if (os_parse_cmd_args(popt->index, optarg)) {
                     error_report("Option not supported in this build");
@@ -3875,7 +3913,9 @@ void qemu_init(int argc, char **argv, char **envp)
 
     have_custom_ram_size = set_memory_options(&ram_slots, &maxram_size,
                                               machine_class);
-
+    uint64_t far_off_size = 0;
+    setup_far_off_memory_options(&far_off_size);
+    qemu_printf("far_off_size: %ld\n", far_off_size);
     os_daemonize();
     rcu_disable_atfork();
 
