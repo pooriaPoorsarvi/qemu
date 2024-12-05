@@ -3,6 +3,7 @@
 
 #include "qemu/osdep.h"
 #include "hw/sysbus.h"
+#include "exec/simbricks_mem.h"
 
 
 

@@ -506,6 +506,29 @@ static QemuOptsList qemu_fw_cfg_opts = {
     },
 };
 
+static QemuOptsList qemu_simbricks_mem_opts = {
+    .name = "simbricks_mem",
+    .implied_opt_name = "socket",
+    .head = QTAILQ_HEAD_INITIALIZER(qemu_simbricks_mem_opts.head),
+    .merge_lists = true,
+    .desc = {
+        {
+            .name = "socket",
+            .type = QEMU_OPT_STRING,
+        },
+        {
+            .name = "link_latency",
+            .type = QEMU_OPT_NUMBER,
+        },
+        {
+            .name = "sync",
+            .type= QEMU_OPT_BOOL,
+        },
+        { /* end of list */ }
+    },
+};
+
+
 /**
  * Get machine options
  *
@@ -2948,6 +2971,7 @@ void qemu_init(int argc, char **argv, char **envp)
     qemu_add_opts(&qemu_icount_opts);
     qemu_add_opts(&qemu_semihosting_config_opts);
     qemu_add_opts(&qemu_fw_cfg_opts);
+    qemu_add_opts(&qemu_simbricks_mem_opts);
     module_call_init(MODULE_INIT_OPTS);
 
     runstate_init();
@@ -3827,6 +3851,16 @@ void qemu_init(int argc, char **argv, char **envp)
                 break;
             case QEMU_OPTION_nouserconfig:
                 /* Nothing to be parsed here. Especially, do not error out below. */
+                break;
+            case QEMU_OPTION_simbricksmem:
+                opts = qemu_opts_parse_noisily(qemu_find_opts("simbricks_mem"),
+                                               optarg, true);
+                if (!opts) {
+                    //TODO: only fail if we don't see remote memory
+                    exit(EXIT_FAILURE);
+                }
+                break;
+                /* Nothing to parse here, all parsing is in simbricks_mem.c. Do not error out below */
                 break;
             default:
                 if (os_parse_cmd_args(popt->index, optarg)) {

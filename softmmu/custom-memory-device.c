@@ -17,6 +17,9 @@ CustomMemoryDevice *get_new_custom_memory_device(unsigned long long base, unsign
     qdev_prop_set_uint64(DEVICE(dev), "size", size);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
+    //qemu_printf("Initializing SimBricks memory interface");
+    init_new_simbricks_mem_if();
+
     return memory;
 }
 
