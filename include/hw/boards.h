@@ -247,6 +247,12 @@ typedef struct CpuTopology {
     unsigned int max_cpus;
 } CpuTopology;
 
+typedef struct FarOffMemory {
+    uint64_t base;
+    uint64_t size;
+    MemoryRegion *mr;
+} FarOffMemory;
+
 /**
  * MachineState:
  */
@@ -276,6 +282,7 @@ struct MachineState {
      * or to numa container memory region
      */
     MemoryRegion *ram;
+    FarOffMemory *far_off_memory;
     DeviceMemoryState *device_memory;
 
     ram_addr_t ram_size;

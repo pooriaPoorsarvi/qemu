@@ -890,19 +890,14 @@ void pc_memory_init(PCMachineState *pcms,
 
 
     // Handles the overlapping memory: TODO maybe make it not overlapped
-    unsigned long long total_ram_size = x86ms->above_4g_mem_size + x86ms->below_4g_mem_size;
-    qemu_printf("total ram size: %lu\n", total_ram_size);
-    qemu_printf("below 4g mem size: %lu\n", x86ms->below_4g_mem_size);
-    qemu_printf("above 4g mem size: %lu\n", x86ms->above_4g_mem_size);
+    
 
-    // If started at 4 GB it will have some confilicts withn where DMA is being setup. So start at 8 or higher.
-    unsigned long long custom_ram_base = 0x200000000ULL;
-    unsigned long long custom_ram_size =  total_ram_size - custom_ram_base;
 
-    qemu_printf("initing custom_ram with size: %lu and base: %lu\n", custom_ram_size, custom_ram_base);
-
-    CustomMemoryDevice *custom_ram = get_new_custom_memory_device(custom_ram_base, custom_ram_size);
-
+    if (machine->far_off_memory){
+        qemu_printf("initing custom_ram with size: %lu and base: %lu\n", machine->far_off_memory->size, machine->far_off_memory->base);
+        CustomMemoryDevice *custom_ram = get_new_custom_memory_device(machine->far_off_memory->base, machine->far_off_memory->size);
+        machine->far_off_memory->mr = &custom_ram->mr;
+    }
     assert(machine->ram_size == x86ms->below_4g_mem_size +
                                 x86ms->above_4g_mem_size);
 

@@ -2596,7 +2596,11 @@ static bool object_create_delayed(const char *type, QemuOpts *opts)
     return !object_create_initial(type, opts);
 }
 
+<<<<<<< Updated upstream
 static bool setup_far_off_memory_options(uint64_t *far_size){
+=======
+static bool setup_far_off_memory_options(){
+>>>>>>> Stashed changes
     const char *far_str;
     QemuOpts *opts = qemu_find_opts_singleton("far-off-memory");
     Location loc;
@@ -2604,6 +2608,12 @@ static bool setup_far_off_memory_options(uint64_t *far_size){
     loc_push_none(&loc);
     qemu_opts_loc_restore(opts);
 
+<<<<<<< Updated upstream
+=======
+
+    uint64_t far_size = 0;
+
+>>>>>>> Stashed changes
     far_str = qemu_opt_get(opts, "far-size");
     if (far_str) {
         if (!*far_str) {
@@ -2611,7 +2621,40 @@ static bool setup_far_off_memory_options(uint64_t *far_size){
             exit(EXIT_FAILURE);
         }
 
+<<<<<<< Updated upstream
         *far_size = qemu_opt_get_size(opts, "far-size", ram_size);
+=======
+        far_size = qemu_opt_get_size(opts, "far-size", ram_size);
+    }
+    far_size = QEMU_ALIGN_UP(far_size, 8192);
+
+
+    uint64_t custom_ram_base = current_machine->ram_size - far_size;
+
+    assert(custom_ram_base >= 0);
+    assert(far_size + custom_ram_base == current_machine->ram_size);
+
+    
+
+
+    // only init far_off_memory if far_size is not 0
+    if (far_size != 0) {
+
+        // The size can not allow the base to be before 8 GB.
+        // If started at 4 GB it will have some confilicts withn where DMA is being setup. So start at 8 or higher.
+        if (custom_ram_base < 0x200000000) {
+            error_report("far-off-memory size too large, can not before 8 GB");
+            exit(EXIT_FAILURE);
+        }
+
+        current_machine->far_off_memory = g_malloc0(sizeof(FarOffMemory));
+        current_machine->far_off_memory->size = far_size;
+        current_machine->far_off_memory->base = custom_ram_base;
+        current_machine->far_off_memory->mr = NULL;
+        qemu_printf("far-off-memory size: 0x%llx\n starting at 0x%llx\n", far_size, custom_ram_base);
+    }else{
+        current_machine->far_off_memory = NULL;
+>>>>>>> Stashed changes
     }
 } 
 
@@ -4405,6 +4448,7 @@ void qemu_init(int argc, char **argv, char **envp)
         create_default_memdev(current_machine, mem_path);
     }
 
+    setup_far_off_memory_options();
     /* from here on runstate is RUN_STATE_PRELAUNCH */
     machine_run_board_init(current_machine);
 
