@@ -2596,11 +2596,7 @@ static bool object_create_delayed(const char *type, QemuOpts *opts)
     return !object_create_initial(type, opts);
 }
 
-<<<<<<< Updated upstream
-static bool setup_far_off_memory_options(uint64_t *far_size){
-=======
 static bool setup_far_off_memory_options(){
->>>>>>> Stashed changes
     const char *far_str;
     QemuOpts *opts = qemu_find_opts_singleton("far-off-memory");
     Location loc;
@@ -2608,12 +2604,9 @@ static bool setup_far_off_memory_options(){
     loc_push_none(&loc);
     qemu_opts_loc_restore(opts);
 
-<<<<<<< Updated upstream
-=======
 
     uint64_t far_size = 0;
 
->>>>>>> Stashed changes
     far_str = qemu_opt_get(opts, "far-size");
     if (far_str) {
         if (!*far_str) {
@@ -2621,9 +2614,6 @@ static bool setup_far_off_memory_options(){
             exit(EXIT_FAILURE);
         }
 
-<<<<<<< Updated upstream
-        *far_size = qemu_opt_get_size(opts, "far-size", ram_size);
-=======
         far_size = qemu_opt_get_size(opts, "far-size", ram_size);
     }
     far_size = QEMU_ALIGN_UP(far_size, 8192);
@@ -2654,7 +2644,6 @@ static bool setup_far_off_memory_options(){
         qemu_printf("far-off-memory size: 0x%llx\n starting at 0x%llx\n", far_size, custom_ram_base);
     }else{
         current_machine->far_off_memory = NULL;
->>>>>>> Stashed changes
     }
 } 
 
