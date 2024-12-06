@@ -3945,9 +3945,6 @@ void qemu_init(int argc, char **argv, char **envp)
 
     have_custom_ram_size = set_memory_options(&ram_slots, &maxram_size,
                                               machine_class);
-    uint64_t far_off_size = 0;
-    setup_far_off_memory_options(&far_off_size);
-    qemu_printf("far_off_size: %ld\n", far_off_size);
     os_daemonize();
     rcu_disable_atfork();
 
