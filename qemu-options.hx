@@ -5143,5 +5143,25 @@ SRST
             (qemu) qom-set /objects/iothread1 poll-max-ns 100000
 ERST
 
+DEF("far-off-memory", HAS_ARG, QEMU_OPTION_far_off_memory,
+    "-far-off-memory [far-size=]megs\n"
+    "                configure guest RAM\n",
+    QEMU_ARCH_ALL)
+
+SRST
+``-far-off-memory [far-size=]megs``
+    Sets guest startup RAM size in far memory to megs megabytes. Default is 8196 MiB.
+    Optionally, a suffix of "M" or "G" can be used to signify a value in
+    megabytes or gigabytes respectively. Optional pair slots, maxmem
+    could be used to set amount of hotpluggable memory slots and maximum
+    amount of memory. Note that maxmem must be aligned to the page size.
+
+    For example, the following command-line sets the guest startup RAM
+    size to 1GB, creates 3 slots to hotplug additional memory and sets
+    the maximum memory the guest can reach to 4GB:
+
+    .. parsed-literal::
+        |qemu_system| -far-off-memory 1G
+ERST
 
 HXCOMM This is the last statement. Insert new options before this line!

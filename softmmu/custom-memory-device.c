@@ -7,7 +7,7 @@
 
 CustomMemoryDevice * singleton;
 
-CustomMemoryDevice *get_new_custom_memory_device(unsigned long long base, unsigned long long size){
+CustomMemoryDevice *get_new_custom_memory_device(uint64_t base, uint64_t size){
     assert(singleton == NULL);
     DeviceState        *dev = qdev_new(TYPE_CUSTOM_MEMORY_DEVICE);
     CustomMemoryDevice *memory = singleton = CUSTOM_MEMORY_DEVICE(dev);
@@ -102,7 +102,7 @@ static void realize_custom_memory(DeviceState *dev, Error **errp) {
     memory->data = g_malloc0(memory->size);
     // assert(llc->idx_mask);
 
-    qemu_printf("realize_custom_memory at size %lx\n and base %lx\n", memory->size, memory->base);
+    qemu_printf("custom memory realized with size: 0x%llx\n starting at 0x%llx\n", memory->size, memory->base);
 
     memory_region_init_io(&memory->mr, OBJECT(dev), &mem_ops, memory, TYPE_CUSTOM_MEMORY_DEVICE, memory->size);
 
@@ -124,6 +124,7 @@ static void class_init(ObjectClass *klass, void *data) {
 
     dev->realize = realize_custom_memory;
     dev->reset   = reset;
+    dev->unrealize = NULL;
 }
 
 static const TypeInfo type_info = {

@@ -38,6 +38,15 @@
         "hostmem.h": "c",
         "object.h": "c",
         "bitops.h": "c",
-        "memory.h": "c"
+        "memory.h": "c",
+        "any": "c",
+        "memory": "c",
+        "random": "c",
+        "future": "c",
+        "optional": "c",
+        "*.ipp": "c",
+        "hash_map": "c",
+        "hash_set": "c",
+        "regex": "c"
     }
 }
