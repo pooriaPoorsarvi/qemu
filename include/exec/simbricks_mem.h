@@ -19,3 +19,6 @@ typedef struct SimbricksMemState {
 
 int init_new_simbricks_mem_if(void);
 int uninit_simbricks_mem_if(void);
+
+int simbricks_mem_read(uint64_t addr, uint64_t *value, unsigned size);
+int simbricks_mem_write(uint64_t addr, uint64_t *value, unsigned size);

@@ -3,13 +3,13 @@
 
 static SimbricksMemState* memstate = NULL;
 
+
 int uninit_simbricks_mem_if(void) {
     SimbricksBaseIfClose(&memstate->memif.base);
     g_free(memstate);
     memstate = NULL;
     return 0;
 }
-
 
 int init_new_simbricks_mem_if(void) {
     assert(memstate == NULL);
@@ -71,11 +71,71 @@ int init_new_simbricks_mem_if(void) {
     }
 
     qemu_printf("Successfully initialized Simbricks socket\n");
-
-    uninit_simbricks_mem_if(); // placeholder for testing to avoid memory leaks
-    // remove when implementing read and write
-
     // Sid TODO: handle errors properly instead of just perror()'ing
+
+    return 0;
+}
+
+static void simbricks_mem_poll_response(uint64_t *value, unsigned size) {
+    struct SimbricksMemIf *mem_if = &memstate->memif;
+    uint8_t type; 
+    uint64_t cur_ts = 0;
+
+    volatile union SimbricksProtoMemM2H *m2h_msg;
+    
+    while (!(m2h_msg = SimbricksMemIfM2HInPoll(mem_if, cur_ts)));
+    type = SimbricksMemIfM2HInType(mem_if, m2h_msg);
+
+    switch (type){
+
+        case SIMBRICKS_PROTO_MEM_M2H_MSG_READCOMP:
+            volatile struct SimbricksProtoMemM2HReadcomp *readcomp = &m2h_msg->readcomp;
+            memcpy(value, readcomp->data, size);
+            break;
+        
+        case SIMBRICKS_PROTO_MEM_M2H_MSG_WRITECOMP:
+            break;
+
+        default:
+            perror("Invalid/Unimplemented Message Type");
+            break;
+    }
+    SimbricksMemIfM2HInDone(mem_if, m2h_msg);
+
+    return;
+}
+
+int simbricks_mem_read(uint64_t addr, uint64_t *value, unsigned size) {
+    struct SimbricksMemIf *mem_if = &memstate->memif;
+    uint64_t cur_ts = 0; // Sid TODO: implement proper timestamping
+    volatile union SimbricksProtoMemH2M *h2m_msg = SimbricksMemIfH2MOutAlloc(mem_if, cur_ts); // Sid TODO: error handling
+    volatile struct SimbricksProtoMemH2MRead *read = &h2m_msg->read;
+    read->req_id = 0;
+    read->addr = addr;
+    read->len = size;
+    read->as_id = 0;
+
+    SimbricksMemIfH2MOutSend(mem_if, h2m_msg, SIMBRICKS_PROTO_MEM_H2M_MSG_READ);
+
+    simbricks_mem_poll_response(value, size);
+
+    return 0;
+}
+
+int simbricks_mem_write(uint64_t addr, uint64_t *value, unsigned size) {
+    struct SimbricksMemIf *mem_if = &memstate->memif;
+    uint64_t cur_ts = 0; // Sid TODO: implement proper timestamping
+    volatile union SimbricksProtoMemH2M *h2m_msg = SimbricksMemIfH2MOutAlloc(mem_if, cur_ts); // Sid TODO: error handling
+    volatile struct SimbricksProtoMemH2MWrite *write = &h2m_msg->write;
+    write->req_id = 0;
+    write->addr = addr;
+    write->len = size;
+    write->as_id = 0;
+    memcpy(write->data, value, size);
+
+    SimbricksMemIfH2MOutSend(mem_if, h2m_msg, SIMBRICKS_PROTO_MEM_H2M_MSG_WRITE);
+
+    simbricks_mem_poll_response(NULL, 0);
 
     return 0;
 }
