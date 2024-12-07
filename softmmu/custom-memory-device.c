@@ -17,6 +17,9 @@ CustomMemoryDevice *get_new_custom_memory_device(uint64_t base, uint64_t size){
     qdev_prop_set_uint64(DEVICE(dev), "size", size);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
+    //qemu_printf("Initializing SimBricks memory interface");
+    init_new_simbricks_mem_if();
+
     return memory;
 }
 
@@ -35,7 +38,7 @@ static Property props[] = {
 
 
 static MemTxResult mem_wr(void *opaque, hwaddr addr, uint64_t value, unsigned size, MemTxAttrs attrs) {
-    // qemu_printf("mem_wr by poori at %lx\n", addr);
+    qemu_printf("mem_wr by poori at %lx\n", addr);
     CustomMemoryDevice *memory = (CustomMemoryDevice *)opaque;
 
     // Check for out-of-bounds access
@@ -45,13 +48,16 @@ static MemTxResult mem_wr(void *opaque, hwaddr addr, uint64_t value, unsigned si
     }
 
     // Copy data from the value to the memory buffer
-    memcpy(memory->data + addr, &value, size);
+    //memcpy(memory->data + addr, &value, size);
+    if (simbricks_mem_write(addr, &value, size)) {
+        return MEMTX_ERROR; // Sid TODO: more descriptive error here
+    }
 
     return MEMTX_OK;
 }
 
 static MemTxResult mem_rd(void *opaque, hwaddr addr, uint64_t *value, unsigned size, MemTxAttrs attrs) {
-    // qemu_printf("mem_rd by poori at %lx\n", addr);
+    qemu_printf("mem_rd by poori at %lx\n", addr);
 
     CustomMemoryDevice *memory = (CustomMemoryDevice *)opaque;
 
@@ -64,7 +70,11 @@ static MemTxResult mem_rd(void *opaque, hwaddr addr, uint64_t *value, unsigned s
     *value = 0;
 
     // Copy data from the memory buffer to the value
-    memcpy(value, memory->data + addr, size);
+    //memcpy(value, memory->data + addr, size);
+
+    if (simbricks_mem_read(addr, value, size)) {
+        return MEMTX_ERROR; // Sid TODO: more descriptive error here
+    }
 
     return MEMTX_OK;
 }

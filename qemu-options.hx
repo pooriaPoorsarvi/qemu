@@ -486,6 +486,18 @@ SRST
     enabled and the guest startup RAM will never increase.
 ERST
 
+DEF("simbricks_mem", HAS_ARG, QEMU_OPTION_simbricksmem,
+    "-simbricks_mem [socket=]socket_path[,link_latency=n,sync=bool]\n"
+    "                set parameters for simbricks memory interface\n"
+    "                socket: path to socket to interface with remote memory device\n"
+    "                link_latency: time in picoseconds to send ld/st to remote memory (default: 500ns)\n"
+    "                sync: synchronous or asynchronous (default: false? unsure)\n",
+    QEMU_ARCH_ALL)
+SRST
+``-simbricks_mem [socket=]socket_path[,link_latency=n,sync=bool]``
+    Sets options for Simbricks memory interface.
+ERST
+
 DEF("mem-path", HAS_ARG, QEMU_OPTION_mempath,
     "-mem-path FILE  provide backing storage for guest RAM\n", QEMU_ARCH_ALL)
 SRST
