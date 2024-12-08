@@ -1,5 +1,6 @@
 #include "exec/custom-memory-device.h"
 #include "hw/qdev-properties.h"
+#include "include/hw/boards.h"
 #include "qapi/error.h"
 #include "exec/address-spaces.h"
 
@@ -7,7 +8,9 @@
 
 CustomMemoryDevice * singleton;
 
-CustomMemoryDevice *get_new_custom_memory_device(uint64_t base, uint64_t size){
+CustomMemoryDevice *get_new_custom_memory_device(FarOffMemory * far_off_memory) {
+    u_int64_t base = far_off_memory->base;
+    u_int64_t size = far_off_memory->size;
     assert(singleton == NULL);
     DeviceState        *dev = qdev_new(TYPE_CUSTOM_MEMORY_DEVICE);
     CustomMemoryDevice *memory = singleton = CUSTOM_MEMORY_DEVICE(dev);
@@ -18,7 +21,7 @@ CustomMemoryDevice *get_new_custom_memory_device(uint64_t base, uint64_t size){
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
     //qemu_printf("Initializing SimBricks memory interface");
-    init_new_simbricks_mem_if();
+    init_new_simbricks_mem_if(far_off_memory->socket);
 
     return memory;
 }

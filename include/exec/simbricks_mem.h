@@ -2,6 +2,7 @@
 #include "qemu/timer.h"
 #include "qemu/option.h"
 #include "qemu/config-file.h"
+#include "include/hw/boards.h"
 
 #include <simbricks/mem/if.h>
 
@@ -17,7 +18,7 @@ typedef struct SimbricksMemState {
     QEMUTimer *timer_poll;
 } SimbricksMemState;
 
-int init_new_simbricks_mem_if(void);
+int init_new_simbricks_mem_if(FarOffSocket * far_off_socket);
 int uninit_simbricks_mem_if(void);
 
 int simbricks_mem_read(uint64_t addr, uint64_t *value, unsigned size);

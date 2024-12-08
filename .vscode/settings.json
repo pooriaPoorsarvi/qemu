@@ -47,6 +47,9 @@
         "*.ipp": "c",
         "hash_map": "c",
         "hash_set": "c",
-        "regex": "c"
+        "regex": "c",
+        "simbricks_mem.h": "c",
+        "sysbus.h": "c",
+        "boards.h": "c"
     }
 }

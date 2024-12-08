@@ -449,6 +449,7 @@ static QemuOptsList qemu_mem_opts = {
     },
 };
 
+
 static QemuOptsList qemu_far_off_memory_opts = {
     .name = "far-off-memory",
     .implied_opt_name = "far-size",
@@ -459,9 +460,45 @@ static QemuOptsList qemu_far_off_memory_opts = {
             .name = "far-size",
             .type = QEMU_OPT_SIZE,
         },
+        {
+            .name = "socket",
+            .type = QEMU_OPT_STRING,
+        },
+        {
+            .name = "link_latency",
+            .type = QEMU_OPT_NUMBER,
+        },
+        {
+            .name = "sync",
+            .type= QEMU_OPT_BOOL,
+        },
         { /* end of list */ }
     },
 };
+
+static QemuOptsList qemu_simbricks_mem_opts = {
+    .name = "simbricks_mem",
+    .implied_opt_name = "socket",
+    .head = QTAILQ_HEAD_INITIALIZER(qemu_simbricks_mem_opts.head),
+    .merge_lists = true,
+    .desc = {
+        {
+            .name = "socket",
+            .type = QEMU_OPT_STRING,
+        },
+        {
+            .name = "link_latency",
+            .type = QEMU_OPT_NUMBER,
+        },
+        {
+            .name = "sync",
+            .type= QEMU_OPT_BOOL,
+        },
+        { /* end of list */ }
+    },
+};
+
+
 static QemuOptsList qemu_icount_opts = {
     .name = "icount",
     .implied_opt_name = "shift",
@@ -518,29 +555,6 @@ static QemuOptsList qemu_fw_cfg_opts = {
         { /* end of list */ }
     },
 };
-
-static QemuOptsList qemu_simbricks_mem_opts = {
-    .name = "simbricks_mem",
-    .implied_opt_name = "socket",
-    .head = QTAILQ_HEAD_INITIALIZER(qemu_simbricks_mem_opts.head),
-    .merge_lists = true,
-    .desc = {
-        {
-            .name = "socket",
-            .type = QEMU_OPT_STRING,
-        },
-        {
-            .name = "link_latency",
-            .type = QEMU_OPT_NUMBER,
-        },
-        {
-            .name = "sync",
-            .type= QEMU_OPT_BOOL,
-        },
-        { /* end of list */ }
-    },
-};
-
 
 /**
  * Get machine options
@@ -2665,6 +2679,23 @@ static bool setup_far_off_memory_options(){
         current_machine->far_off_memory->base = custom_ram_base;
         current_machine->far_off_memory->mr = NULL;
         qemu_printf("far-off-memory size: 0x%llx\n starting at 0x%llx\n", far_size, custom_ram_base);
+
+        const char* socket_path = qemu_opt_get(opts, "socket");
+        uint64_t link_latency = strtoull(qemu_opt_get(opts, "link_latency"), NULL, 0);
+        bool sync = strtol(qemu_opt_get(opts, "sync"), NULL, 0);
+
+        // socket_path can not be empty or an empty string 
+        if (!socket_path) {
+            error_report("missing socket path for far-off-memory");
+            exit(EXIT_FAILURE);
+        }
+        FarOffSocket * socket = g_malloc0(sizeof(FarOffSocket));
+        socket->link_latency = link_latency;
+        socket->sync = sync;
+        socket->socket_path = socket_path;
+
+        current_machine->far_off_memory->socket = socket;
+
     }else{
         current_machine->far_off_memory = NULL;
     }

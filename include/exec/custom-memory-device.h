@@ -3,6 +3,7 @@
 
 #include "qemu/osdep.h"
 #include "hw/sysbus.h"
+#include "include/hw/boards.h"
 #include "exec/simbricks_mem.h"
 
 
@@ -25,7 +26,7 @@ DECLARE_INSTANCE_CHECKER(CustomMemoryDevice,
                          CUSTOM_MEMORY_DEVICE,
                          TYPE_CUSTOM_MEMORY_DEVICE)
 
-CustomMemoryDevice *get_new_custom_memory_device(uint64_t base, uint64_t size);
+CustomMemoryDevice *get_new_custom_memory_device(FarOffMemory * far_off_memory);
 CustomMemoryDevice *get_custom_memory_device_singleton(void);
 
 

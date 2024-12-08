@@ -11,7 +11,7 @@ int uninit_simbricks_mem_if(void) {
     return 0;
 }
 
-int init_new_simbricks_mem_if(void) {
+int init_new_simbricks_mem_if(FarOffSocket * far_off_socket) {
     assert(memstate == NULL);
     memstate = g_malloc0(sizeof(*memstate));
     struct SimbricksBaseIf* base_if = &memstate->memif.base;
@@ -19,10 +19,9 @@ int init_new_simbricks_mem_if(void) {
 
     SimbricksMemIfDefaultParams(&memParams);
 
-    QemuOpts* simbricksMemCliOptions = qemu_find_opts_singleton("simbricks_mem");
-    const char* socket_path = qemu_opt_get(simbricksMemCliOptions, "socket");
-    uint64_t link_latency = strtoull(qemu_opt_get(simbricksMemCliOptions, "link_latency"), NULL, 0);
-    bool sync = strtol(qemu_opt_get(simbricksMemCliOptions, "sync"), NULL, 0);
+    bool sync = far_off_socket->sync;
+    uint64_t link_latency = far_off_socket->link_latency;
+    const char *socket_path = far_off_socket->socket_path;
 
     assert(socket_path);
 

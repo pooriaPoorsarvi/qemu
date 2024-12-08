@@ -247,10 +247,18 @@ typedef struct CpuTopology {
     unsigned int max_cpus;
 } CpuTopology;
 
+
+typedef struct FarOffSocket {
+    char* socket_path;
+    uint64_t link_latency;
+    bool sync;
+} FarOffSocket;
+
 typedef struct FarOffMemory {
     uint64_t base;
     uint64_t size;
     MemoryRegion *mr;
+    FarOffSocket *socket;
 } FarOffMemory;
 
 /**
