@@ -5131,6 +5131,7 @@ SRST
             (qemu) qom-set /objects/iothread1 poll-max-ns 100000
 ERST
 
+// TODO update the docs here
 DEF("far-off-memory", HAS_ARG, QEMU_OPTION_far_off_memory,
     "-far-off-memory [far-size=]megs[socket=]socket_path[,link_latency=n,sync=bool]\n"
     "                configure guest RAM\n"

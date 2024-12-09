@@ -12,6 +12,7 @@ int uninit_simbricks_mem_if(void) {
 }
 
 int init_new_simbricks_mem_if(FarOffSocket * far_off_socket) {
+    // TODO : remove anything that realisse to params here, everything should come from the machine
     assert(memstate == NULL);
     memstate = g_malloc0(sizeof(*memstate));
     struct SimbricksBaseIf* base_if = &memstate->memif.base;
