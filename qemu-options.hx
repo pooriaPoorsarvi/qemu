@@ -5131,22 +5131,10 @@ SRST
             (qemu) qom-set /objects/iothread1 poll-max-ns 100000
 ERST
 
-// DEF("simbricks_mem", HAS_ARG, QEMU_OPTION_simbricksmem,
-//     "-simbricks_mem [socket=]socket_path[,link_latency=n,sync=bool]\n"
-//     "                set parameters for simbricks memory interface\n"
-//     "                socket: path to socket to interface with remote memory device\n"
-//     "                link_latency: time in picoseconds to send ld/st to remote memory (default: 500ns)\n"
-//     "                sync: synchronous or asynchronous (default: false? unsure)\n",
-//     QEMU_ARCH_ALL)
-// SRST
-// ``-simbricks_mem [socket=]socket_path[,link_latency=n,sync=bool]``
-//     Sets options for Simbricks memory interface.
-// ERST
-
 DEF("far-off-memory", HAS_ARG, QEMU_OPTION_far_off_memory,
     "-far-off-memory [far-size=]megs[socket=]socket_path[,link_latency=n,sync=bool]\n"
-    "                configure guest RAM\n",
-    "                socket: path to socket to interface with remote memory device\n",
+    "                configure guest RAM\n"
+    "                socket: path to socket to interface with remote memory device\n"
     "                link_latency: time in picoseconds to send ld/st to remote memory (default: 500ns)\n"
     "                sync: synchronous or asynchronous (default: false? unsure)\n",
     QEMU_ARCH_ALL)

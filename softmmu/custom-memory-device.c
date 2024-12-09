@@ -41,7 +41,6 @@ static Property props[] = {
 
 
 static MemTxResult mem_wr(void *opaque, hwaddr addr, uint64_t value, unsigned size, MemTxAttrs attrs) {
-    qemu_printf("mem_wr by poori at %lx\n", addr);
     CustomMemoryDevice *memory = (CustomMemoryDevice *)opaque;
 
     // Check for out-of-bounds access
@@ -60,7 +59,6 @@ static MemTxResult mem_wr(void *opaque, hwaddr addr, uint64_t value, unsigned si
 }
 
 static MemTxResult mem_rd(void *opaque, hwaddr addr, uint64_t *value, unsigned size, MemTxAttrs attrs) {
-    qemu_printf("mem_rd by poori at %lx\n", addr);
 
     CustomMemoryDevice *memory = (CustomMemoryDevice *)opaque;
 
