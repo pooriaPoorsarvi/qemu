@@ -15,7 +15,8 @@ typedef struct CustomMemoryDevice {
     uint64_t            base;
     uint64_t            size;
 
-    uint8_t *data;         // Pointer to the data buffer
+    bool uses_socket;
+    uint8_t *data;         // Pointer to the data buffer if there is no socket
     // RAMBlock *data;
 
 } CustomMemoryDevice;

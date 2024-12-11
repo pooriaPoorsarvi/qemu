@@ -96,6 +96,7 @@
 #include "fw_cfg.h"
 #include "trace.h"
 #include "exec/custom-memory-device.h"
+#include "include/qemu/qemu-print.h"
 #include CONFIG_DEVICES
 
 GlobalProperty pc_compat_5_1[] = {

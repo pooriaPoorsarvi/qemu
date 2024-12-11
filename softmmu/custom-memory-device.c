@@ -3,6 +3,7 @@
 #include "include/hw/boards.h"
 #include "qapi/error.h"
 #include "exec/address-spaces.h"
+#include "include/qemu/qemu-print.h"
 
 
 
@@ -18,10 +19,17 @@ CustomMemoryDevice *get_new_custom_memory_device(FarOffMemory * far_off_memory) 
 
     qdev_prop_set_uint64(DEVICE(dev), "base", base);
     qdev_prop_set_uint64(DEVICE(dev), "size", size);
-    sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
-    //qemu_printf("Initializing SimBricks memory interface");
-    init_new_simbricks_mem_if(far_off_memory->socket);
+    qemu_printf("Initializing custom memory");
+    
+    if (far_off_memory->socket != NULL) {
+        qemu_printf("Initializing SimBricks memory interface");
+        qdev_prop_set_bit(DEVICE(dev), "uses_socket", true);
+        init_new_simbricks_mem_if(far_off_memory->socket);
+    }else{
+        qdev_prop_set_bit(DEVICE(dev), "uses_socket", false);
+    }
+    sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
     return memory;
 }
@@ -36,6 +44,8 @@ static Property props[] = {
     // Pooria TODO : check if the base is correct
     DEFINE_PROP_UINT64("base", CustomMemoryDevice, base, 0x200000000ULL),
     DEFINE_PROP_UINT64("size", CustomMemoryDevice, size, 0x100000000ULL),
+    DEFINE_PROP_BOOL("uses_socket", CustomMemoryDevice, uses_socket, true),
+
     DEFINE_PROP_END_OF_LIST()
 };
 
@@ -50,8 +60,10 @@ static MemTxResult mem_wr(void *opaque, hwaddr addr, uint64_t value, unsigned si
     }
 
     // Copy data from the value to the memory buffer
-    //memcpy(memory->data + addr, &value, size);
-    if (simbricks_mem_write(addr, &value, size)) {
+    if (!memory->uses_socket){
+        memcpy(memory->data + addr, &value, size);
+    }
+    else if (simbricks_mem_write(addr, &value, size)) {
         return MEMTX_ERROR; // Sid TODO: more descriptive error here
     }
 
@@ -71,9 +83,10 @@ static MemTxResult mem_rd(void *opaque, hwaddr addr, uint64_t *value, unsigned s
     *value = 0;
 
     // Copy data from the memory buffer to the value
-    //memcpy(value, memory->data + addr, size);
-
-    if (simbricks_mem_read(addr, value, size)) {
+    if (!memory->uses_socket){
+        memcpy(value, memory->data + addr, size);
+    }
+    else if (simbricks_mem_read(addr, value, size)) {
         return MEMTX_ERROR; // Sid TODO: more descriptive error here
     }
 
@@ -99,9 +112,11 @@ static void realize_custom_memory(DeviceState *dev, Error **errp) {
     MemoryRegion * sys_mem = get_system_memory();
     CustomMemoryDevice *memory = CUSTOM_MEMORY_DEVICE(dev);
 
-
-    memory->data = g_malloc0(memory->size);
-    // assert(llc->idx_mask);
+    if (!memory->uses_socket) {
+        memory->data = g_malloc0(memory->size);
+    }else{
+        memory->data = NULL;
+    }
 
     qemu_printf("custom memory realized with size: 0x%llx\n starting at 0x%llx\n", memory->size, memory->base);
 
@@ -116,7 +131,9 @@ static void reset(DeviceState *dev) {
     CustomMemoryDevice *memory = CUSTOM_MEMORY_DEVICE(dev);
 
     // Zero out the data buffer
-    memset(memory->data, 0, memory->size);
+    if (!memory->uses_socket){
+        memset(memory->data, 0, memory->size);
+    }
 }
 static void class_init(ObjectClass *klass, void *data) {
     DeviceClass *dev = DEVICE_CLASS(klass);

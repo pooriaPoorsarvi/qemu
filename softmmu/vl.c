@@ -114,6 +114,7 @@
 #include "qapi/qmp/qerror.h"
 #include "sysemu/iothread.h"
 #include "qemu/guest-random.h"
+#include "include/qemu/qemu-print.h"
 
 #define MAX_VIRTIO_CONSOLES 1
 
@@ -2658,20 +2659,20 @@ static bool setup_far_off_memory_options(){
         qemu_printf("far-off-memory size: 0x%llx\n starting at 0x%llx\n", far_size, custom_ram_base);
 
         const char* socket_path = qemu_opt_get(opts, "socket");
-        uint64_t link_latency = strtoull(qemu_opt_get(opts, "link_latency"), NULL, 0);
-        bool sync = strtol(qemu_opt_get(opts, "sync"), NULL, 0);
 
-        // socket_path can not be empty or an empty string 
-        if (!socket_path) {
-            error_report("missing socket path for far-off-memory");
-            exit(EXIT_FAILURE);
+        if (socket_path ) {
+            uint64_t link_latency = strtoull(qemu_opt_get(opts, "link_latency"), NULL, 0);
+            bool sync = strtol(qemu_opt_get(opts, "sync"), NULL, 0);
+
+            FarOffSocket * socket = g_malloc0(sizeof(FarOffSocket));
+            socket->link_latency = link_latency;
+            socket->sync = sync;
+            socket->socket_path = socket_path;
+
+            current_machine->far_off_memory->socket = socket;
+        }else {
+            current_machine->far_off_memory->socket = NULL;
         }
-        FarOffSocket * socket = g_malloc0(sizeof(FarOffSocket));
-        socket->link_latency = link_latency;
-        socket->sync = sync;
-        socket->socket_path = socket_path;
-
-        current_machine->far_off_memory->socket = socket;
 
     }else{
         current_machine->far_off_memory = NULL;
