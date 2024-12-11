@@ -10,6 +10,8 @@ specific_ss.add(when: 'CONFIG_SOFTMMU', if_true: [files(
   'qtest.c',
   'vl.c',
   'cpu-timers.c',
+  'custom-memory-device.c',
+  'simbricks_mem.c'
 )])
 
 specific_ss.add(when: ['CONFIG_SOFTMMU', 'CONFIG_TCG'], if_true: [files(
