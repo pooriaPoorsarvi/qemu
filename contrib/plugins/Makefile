@@ -24,6 +24,7 @@ SONAMES := $(addsuffix .so,$(addprefix lib,$(NAMES)))
 # in plugins (which many example do).
 CFLAGS = $(GLIB_CFLAGS)
 CFLAGS += -fPIC
+CFLAGS += -g
 CFLAGS += $(if $(findstring no-psabi,$(QEMU_CFLAGS)),-Wpsabi)
 CFLAGS += -I$(SRC_PATH)/include/qemu
 
@@ -33,7 +34,7 @@ all: $(SONAMES)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 lib%.so: %.o
-	$(CC) -shared -Wl,-soname,$@ -o $@ $^ $(LDLIBS)
+	$(CC) -shared -Wl,-soname,$@ -o $@ $^ $(LDLIBS) -rdynamic
 
 clean:
 	rm -f *.o *.so *.d

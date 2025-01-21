@@ -50,6 +50,22 @@
         "regex": "c",
         "simbricks_mem.h": "c",
         "sysbus.h": "c",
-        "boards.h": "c"
+        "boards.h": "c",
+        "string-input-visitor.h": "c",
+        "qemu-common.h": "c",
+        "tb-lookup.h": "c",
+        "exec-all.h": "c",
+        "sysemu.h": "c",
+        "atomic.h": "c",
+        "tcg.h": "c",
+        "disas.h": "c",
+        "cpu.h": "c",
+        "log.h": "c",
+        "main-loop.h": "c",
+        "aio.h": "c",
+        "chrono": "c",
+        "algorithm": "c",
+        "qemu-plugin.h": "c",
+        "glib.h": "c"
     }
 }
