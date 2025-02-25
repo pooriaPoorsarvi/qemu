@@ -14,6 +14,11 @@
 #include <glib.h>
 
 #include <qemu-plugin.h>
+// Import time library to capture the length of the program in microseconds
+#include <time.h>
+
+// Start and end time of the program
+struct timespec start, end;
 
 QEMU_PLUGIN_EXPORT int qemu_plugin_version = QEMU_PLUGIN_VERSION;
 
@@ -39,6 +44,11 @@ typedef struct {
     unsigned long insns;
 } ExecCount;
 
+
+long get_time_in_ms(struct timespec *ts) {
+    return ts->tv_sec * 1000LL + ts->tv_nsec / 1000000; // Convert sec + nanosec to milliseconds
+}
+
 static gint cmp_exec_count(gconstpointer a, gconstpointer b)
 {
     ExecCount *ea = (ExecCount *) a;
@@ -48,6 +58,10 @@ static gint cmp_exec_count(gconstpointer a, gconstpointer b)
 
 static void plugin_exit(qemu_plugin_id_t id, void *p)
 {
+    // Get the end time of the program in milliseconds using time.h
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    // Calculate the time taken by the program in milliseconds
+    long elapsed_time_mili = get_time_in_ms(&end) - get_time_in_ms(&start);
     g_autoptr(GString) report = g_string_new("collected ");
     GList *counts, *it;
     int i;
@@ -58,6 +72,9 @@ static void plugin_exit(qemu_plugin_id_t id, void *p)
     counts = g_hash_table_get_values(hotblocks);
     it = g_list_sort(counts, cmp_exec_count);
 
+    // Total number of instructions
+    long long int total_insns = 0;
+
     if (it) {
         g_string_append_printf(report, "pc, tcount, icount, ecount\n");
 
@@ -66,11 +83,47 @@ static void plugin_exit(qemu_plugin_id_t id, void *p)
             g_string_append_printf(report, "%#016"PRIx64", %d, %ld, %"PRId64"\n",
                                    rec->start_addr, rec->trans_count,
                                    rec->insns, rec->exec_count);
+            total_insns += (rec->insns * rec->exec_count);
         }
+
+        // Instructions per second
+        double insns_per_sec = (double) total_insns / (elapsed_time_mili/1000);
+
+        g_string_append_printf(report, "================= Total instructions ================= : %lld\n", total_insns);
+        g_string_append_printf(report, "================= Total instructions per second ================= : %f\n", insns_per_sec);
+        // BIG TODO, this needs to be removed, its only here because simbricks has a bug for allowing the plugins to be printed
+        for (int i=0 ; i < 100 ; i ++){
+            
+            // check if output_ips_<i>.txt exists
+            char filename[100];
+            sprintf(filename, "output_ips_%d.txt", i);
+            // check if file exists, then ignore it, if not create it
+            if(access(filename, F_OK) == 0){
+                continue;
+            }else{
+                // Open a file to write the output
+                FILE *fptr;
+                fptr = fopen(filename, "w");
+                if (fptr == NULL) {
+                    printf("Error!");
+                    exit(1);
+                }
+                fprintf(fptr, "================= Total instructions ================= : %lld\n", total_insns);
+                fprintf(fptr, "================= Total instructions per second ================= : %f\n", insns_per_sec);
+                // close file
+                fclose(fptr);
+                break;
+            }
+        }
+        
 
         g_list_free(it);
         g_mutex_unlock(&lock);
+    }else{
+        printf("================= No data found ================= \n");
     }
+
+
 
     qemu_plugin_outs(report->str);
 }
@@ -78,6 +131,9 @@ static void plugin_exit(qemu_plugin_id_t id, void *p)
 static void plugin_init(void)
 {
     hotblocks = g_hash_table_new(NULL, g_direct_equal);
+    // Get the start time of the program in milliseconds using time.h
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    printf("===================== initialized hotblocks plugin =====================\n");
 }
 
 static void vcpu_tb_exec(unsigned int cpu_index, void *udata)
